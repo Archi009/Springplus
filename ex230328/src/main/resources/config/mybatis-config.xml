@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE configuration
+  PUBLIC "-//mybatis.org//DTD Config 3.0//EN"
+  "https://mybatis.org/dtd/mybatis-3-config.dtd">
+  
+  <configuration>
+  	<settings>
+<!--   	필수표기법 전환 -->
+<!--   	db의 - 형식의 이름을 Java에서 인식 할때 카멜케이스로 인식하겠다는 설정 -->
+  		<setting name="mapUnderscoreToCamelCase" value="true"/>
+<!--   		sql문에 null 이 들어가면 어떻게 처리할건지 설정 -->
+  		<setting name="jdbcTypeForNull" value="NULL"/>
+  	</settings>
+	<typeAliases>
+<!-- 	VO 클래스에 대한 별칭 설정 -->
+<!-- 	package 아래에 모든 파일들에 별칭을 주는 설정 -->
+		<package name="com.yedam.spring"/>
+	</typeAliases>  
+	
+  	<typeHandlers>
+<!--   	다른언어와 타입이 다른것을 어떻게 처리할지 설정. -->
+<!-- 공식 페이지에는 풀네임을 제공하지 않아 추가함 -->
+  		<typeHandler javaType="java.sql.Date" handler="org.apache.ibatis.type.DateTypeHandler"/>
+  	</typeHandlers>
+  </configuration>

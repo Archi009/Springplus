@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+  PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+  "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
+  
+  <mapper namespace="com.yedam.java.mapper.BoardMapper">
+  	<!-- mapper interface의 method 와 xml내의 쿼리문은 1대1 대응이다 -->
+  	<!-- 전체조회 -->
+  	
+  	<select id="selectAllBoardList" resultType="BoardVO">
+  	  	SELECT * FROM board_tbl_01 ORDER BY board_no  	
+  	</select>  	
+  	
+  	<!-- 부여될 게시글 번호 조회 -->
+  	
+  	<select id="getBoardNo" resultType="Integer" >
+		SELECT NVL(MAX(board_no),0) +1 FROM board_tbl_01
+		<!-- 컬럼 : board_no -> 필드 : boardNo -->
+		<!-- mybatis는 sql문을 돌렸을때 나온 컬럼의 이름을 통해 인식한다 
+		만약 위의 NVL~를 VO로 받고 싶다면 대응하는 컬럼명으로 별칭을 지정 해 줘야 한다.-->   	
+  	</select> 
+  	
+  	<!-- 게시글 등록 -->
+  	<insert id="insertBoard" parameterType="BoardVO">
+  	 	INSERT INTO board_tbl_01
+  	 					(board_no,
+  	 					 board_title,
+  	 					 board_writer,
+  	 					 board_content,
+  	 					 board_image,
+  	 					 board_date)
+  	 				VALUES
+  	 					(#{boardNo},
+  	 					 #{boardTitle},
+  	 					 #{boardWriter},
+  	 					 #{boardContent},
+  	 					 #{boardImage},
+  	 					 #{boardDate})
+  	</insert>
+  	<!-- 게시글 조회를 기반으로 한 인기순 -->
+  	
+  
+  
+  </mapper>

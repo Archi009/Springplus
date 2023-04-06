@@ -1,0 +1,85 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xmlns:security="http://www.springframework.org/schema/security"
+	xsi:schemaLocation="http://www.springframework.org/schema/security http://www.springframework.org/schema/security/spring-security-5.3.xsd
+		http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd">
+	<!-- 적용하고자하는 유알엘 로그인 정보까지 넣어줘야 함 -->
+	<!-- 어떤 경로에서 적용할건지말건지를 결정하는 것이 intercept-url이다. -->
+	<!-- 그 밑엔 인증과 관련된 것들 -->
+	<!-- 유알엘에 우리 서버와 관련된 경로에 대해서 어떤식으로 적용할것인지 적어주면 됨 -->
+	<!-- 체크가 유알엘이 순차적으로 들어기 때문에 아스타가 밑에 있어야 함(개중요함) jsp를 요청하게되면 엑세스(권한)에 대한 
+		체크 permitAll() : 시큐리티에서 제공하는 메소드 모든사람에 대해서 허용하겠다라는 의미(인증,인가 무시) -->
+	<!-- hasAutority 특정 사람에게 인가부여 : 현재 페이지에는 ROLE_ADMIN이라는 권한을 가진 사람에게만 admin에 
+		접속인가를 내줌 -->
+
+	<security:http pattern="/css/**" security="none" />
+
+	<!-- isAuthenticated 권한의 종류와 상관없이 있으면 모두 가능하도록 pattern의 어드민 이 들어간 모든(**)값 -->
+	<!-- hasAuthority() : 지정해둔 경로에 대해서 특정한 권한만 접근할 수 있다라는 의미, ROLE_ 을 붙힌다 -->
+	<!-- isAuthenticated() 어드민도 가능하고 유저도 가능하다, 권한에 상관없이 인증한 사람들이라면 다 접근할 수 있도록 
+		처리한다 -->
+	<security:http>
+		<security:intercept-url pattern="/top.jsp"
+			access="permitAll()" />
+		<security:intercept-url pattern="/admin/**"
+			access="hasAuthority('ROLE_ADMIN')" />
+		<security:intercept-url pattern="/**"
+			access="isAuthenticated()" />
+
+
+		<!-- default-target-url : 앞의 과정이 성공하면 url의 경로로 가겠다 -->
+		<!-- logout-url 로그 아웃시 어디로 갈지 , success-url 성공시 어디로 갈지 -->
+		<security:form-login default-target-url="/top.jsp" />
+		<security:logout logout-url="/logout"
+			logout-success-url="/top.jsp" />
+<!-- 			csrf비활성화 -->
+		<security:csrf disabled="true" />
+	</security:http>
+	<!-- 로그아웃과 세션의 만료는 반드시 연동되었지는 않다, 로그 아웃시 세션의 만료 여부를 설정해 주어야한다. -->
+
+	<!-- 아래에서 계정에 대한 정보를 xml에 저장한다 -->
+<!-- 	authentication-provider 사용자 입력에 대한 데이터를 인증 -->
+<!--    인증과 관련된 정보를 security context holder에 세션 저장 -->
+	<security:authentication-manager>
+		<security:authentication-provider>
+			<security:jdbc-user-service
+				data-source-ref="dataSource"
+				users-by-username-query
+				="select LOGIN_ID, PASSWORD, 1 
+					from T_USER 
+					where LOGIN_ID = ?"
+				authorities-by-username-query
+				="select LOGIN_ID, ROLE_NAME 
+					from T_ROLE inner join T_USER_ROLE 
+					on T_ROLE.ID = T_USER_ROLE.ROLE_ID 
+					inner join T_USER 
+					on T_USER_ROLE.USER_ID = T_USER.ID where LOGIN_ID = ?" />
+			<security:password-encoder hash="bcrypt"/>
+		</security:authentication-provider>
+	</security:authentication-manager>
+
+</beans>
+<!-- <security:authentication-manager> -->
+<!--         실질적으로 인증을 확인하고 실제로 등록되어있는 대상인지 확인함 -->
+<!--         <security:authentication-provider> -->
+<!--             data를 들고있는 bean을 참조한다 -->
+<!--             users-by-username-query은 인증 처리 -->
+<!--             authorities-by-username-query은 권한을 처리 -->
+<!--             <security:jdbc-user-service -->
+<!--                 data-source-ref="dataSource" -->
+<!--                 users-by-username-query=" -->
+<!--                 select LOGIN_ID, PASSWORD, 1 -->
+<!--                   from T_USER -->
+<!--                  where LOGIN_ID = ?" -->
+<!--                 authorities-by-username-query=" -->
+<!--                 select LOGIN_ID, ROLE_NAME -->
+<!--                   from T_ROLE -->
+<!--                  inner join T_USER_ROLE on T_ROLE.ID = T_USER_ROLE.ROLE_ID -->
+<!--                  inner join T_USER on T_USER_ROLE.USER_ID = T_USER.ID -->
+<!--                  where LOGIN_ID = ?" /> -->
+<!--                  ↓ 로그인할때 사용하는 비밀번호의 복호화작업을 실행함 ( 들어오는 data에 대해 암호화 작업해애함 ) -->
+<!--                  <security:password-encoder hash="bcrypt"/> -->
+<!--         </security:authentication-provider> -->
+<!--     </security:authentication-manager> post put delete 와 같이 데이터를 보내는 방식의 통신은 보안이 약하다. 
+			그래서 security 에서 csrf 공격을 차단하기위해 토큰(허가증)을 발행하여 역추적으로 하는 해킹을 방지한다.-->
